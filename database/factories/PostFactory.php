@@ -16,7 +16,20 @@ class PostFactory extends Factory
             'name' => fake()->name(),
             'description' => fake()->text(),
             'body' => fake()->paragraph(6),
-            'published_at' => null,
         ];
+    }
+
+    public function published(?Carbon $time = null): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'published_at' => $time ?? now(),
+        ]);
+    }
+
+    public function unPublished(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'published_at' => null,
+        ]);
     }
 }

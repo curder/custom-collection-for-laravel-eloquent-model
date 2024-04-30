@@ -1,66 +1,109 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## 自定义 Eloquent 模型集合
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+在 Laravel 查询数据的过程中，需要将查询后的数据进行一些处理，可以通过自定义模型集合的方式重构。
 
-## About Laravel
+比如下面的代码逻辑：
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+```php
+use App\Models\Posts;
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Post::query()
+    ->where('published_at', '<=', now()->toDateTimeString())
+    ->orderBy('published_at', 'desc')
+    ->get()
+    ->keyBy('id')
+    ->map(function ($post) {
+        return $post->title;
+    });
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+建议将 `where` 查询和 `orderBy` 排序重构到 Eloquent 模型中，使代码更加清晰。
 
-## Learning Laravel
+```php
+// 重构之前
+Post::query()
+    ->where('published_at', '<=', now()->toDateTimeString())
+    ->orderBy('published_at', 'desc')
+    ->get()
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+// 重构后
+Post::query()->published()->orderByMostRecent()->get();
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+然后需要在模型中定义一些方法，方便在其他查询中公用它们：
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```php
+class Post extends Model
+{
+    // ...
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query->whereNotNull('published_at')
+            ->where('published_at', '<=', now()->toDateTimeString());
+    }
 
-## Laravel Sponsors
+    public function scopeOrderByMostRecent(Builder $query): Builder
+    {
+        return $query->orderByDesc('published_at');
+    }
+}
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+经过上面的重构，我们的查询语句变得更加清晰，但是发现在进行查询数据后，还使用了 `keyBy()` 和 `map()` 的集合方法。
 
-### Premium Partners
+```php
+use App\Models\Posts;
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Post::query()
+    ->published()
+    ->orderByMostRecent()
+    ->get()
+    ->keyBy('id')
+    ->map(function ($post) {
+        return $post->title;
+    });
+```
 
-## Contributing
+可以通过新建一个自定义的模型集合类来完成。
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```php
+<?php
 
-## Code of Conduct
+namespace App\Models\Collections;
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+use App\Models\Post;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
-## Security Vulnerabilities
+class PostCollection extends Collection
+{
+    public function toDropdown(string $key = 'id', string $value = 'name'): static
+    {
+        return $this->keyBy($key)
+            ->map(
+                fn(Post $post) => $post->getAttribute($value)
+            );
+    }
+}
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+然后在模型中指定这个自定义的集合，而不是使用默认的。
 
-## License
+```php
+use App\Models\Collections\PostCollection;
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+class Post extends Model
+{
+    // ...
+    public function newCollection(array $models = [])
+    {
+        return PostCollection::make($models);
+    }
+}
+```
+
+此时，查询语句可以重构成这样：
+
+```php
+Post::query()->published()->orderByMostRecent()->get()->toDropdown();
+```
