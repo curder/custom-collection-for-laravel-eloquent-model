@@ -1,5 +1,8 @@
 ## 自定义 Eloquent 模型集合
 
+[![Check & fix styling](https://github.com/curder/custom-collection-for-laravel-eloquent-model/actions/workflows/pint.yml/badge.svg?branch=master)](https://github.com/curder/custom-collection-for-laravel-eloquent-model/actions/workflows/pint.yml)
+[![Test Laravel Github action](https://github.com/curder/custom-collection-for-laravel-eloquent-model/actions/workflows/run-test.yml/badge.svg?branch=master)](https://github.com/curder/custom-collection-for-laravel-eloquent-model/actions/workflows/run-test.yml)
+
 在 Laravel 查询数据的过程中，需要将查询后的数据进行一些处理，可以通过自定义模型集合的方式重构。
 
 比如下面的代码逻辑：
