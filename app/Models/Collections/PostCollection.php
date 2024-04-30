@@ -15,4 +15,14 @@ class PostCollection extends Collection
                 fn(Post $post) => $post->getAttribute($value)
             );
     }
+
+
+    public function markAsPublished(Carbon $published_at): self
+    {
+        $this->each(
+            fn(Post $post) => $post->markAsPublished($published_at)
+        );
+
+        return $this;
+    }
 }

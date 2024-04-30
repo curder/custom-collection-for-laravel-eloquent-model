@@ -5,6 +5,7 @@ namespace App\Models\Repositories;
 use App\Models\Collections\PostCollection;
 use App\Models\Post;
 use App\Models\Repositories\Contracts\PostRepositoryInterface;
+use Carbon\Carbon;
 
 class PostRepository implements PostRepositoryInterface
 {
@@ -17,5 +18,18 @@ class PostRepository implements PostRepositoryInterface
             ->get();
 
         return $posts->toDropdown($key, $value);
+    }
+
+    public function markAsPublished(int|array|PostCollection $id, Carbon $published_at = null): null|Post|PostCollection
+    {
+        $published_at = $published_at ?? now();
+
+        return match (true) {
+            is_int($id) => Post::query()->find($id)?->markAsPublished($published_at),
+
+            $id instanceof PostCollection => $id->markAsPublished($published_at),
+
+            is_array($id) => Post::query()->whereIn('id', $id)->get()->markAsPublished($published_at),
+        };
     }
 }

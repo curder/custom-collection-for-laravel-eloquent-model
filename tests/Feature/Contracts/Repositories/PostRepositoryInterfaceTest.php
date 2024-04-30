@@ -44,3 +44,24 @@ it('has order by most recent dropdown options', function () {
             $second->id => $second->name,
         ]);
 });
+
+it('has markAsPublished method', function () {
+    $repository = app(PostRepositoryInterface::class);
+
+    expect($repository->markAsPublished(id: 100))->toBeNull();
+
+    $post = Post::factory()->unPublished()->create();
+    expect($repository->markAsPublished(id: $post->id))
+        ->published_at->not->toBeNull();
+
+    $posts = Post::factory(2)->unPublished()->create();
+    expect($repository->markAsPublished(id:$posts->pluck('id')->toArray()))
+        ->toBeInstanceOf(PostCollection::class)
+        ->toHaveCount(2);
+
+
+    $posts = Post::factory(2)->unPublished()->create();
+    expect($repository->markAsPublished($posts))
+        ->toBeInstanceOf(PostCollection::class)
+        ->toHaveCount(2);
+});

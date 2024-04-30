@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Builders\PostBuilder;
 use App\Models\Collections\PostCollection;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,6 +37,12 @@ class Post extends Model
         return $query->orderByDesc('published_at');
     }
 
+    public function markAsPublished(Carbon $published_at): self
+    {
+        $this->update(['published_at' => $published_at]);
+
+        return $this;
+    }
 
     public function newCollection(array $models = [])
     {
