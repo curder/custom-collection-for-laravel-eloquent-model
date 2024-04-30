@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Post;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PostFactory extends Factory
 {
@@ -21,14 +21,14 @@ class PostFactory extends Factory
 
     public function published(?Carbon $time = null): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'published_at' => $time ?? now(),
         ]);
     }
 
     public function unPublished(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'published_at' => null,
         ]);
     }

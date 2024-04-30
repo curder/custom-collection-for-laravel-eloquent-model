@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\Models\Repositories\Contracts\PostRepositoryInterface;
-use App\Models\Repositories\PostRepository;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Repositories\PostRepository;
+use App\Models\Repositories\Contracts\PostRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {

@@ -2,10 +2,10 @@
 
 namespace App\Models\Repositories;
 
-use App\Models\Collections\PostCollection;
-use App\Models\Post;
-use App\Models\Repositories\Contracts\PostRepositoryInterface;
 use Carbon\Carbon;
+use App\Models\Post;
+use App\Models\Collections\PostCollection;
+use App\Models\Repositories\Contracts\PostRepositoryInterface;
 
 class PostRepository implements PostRepositoryInterface
 {
@@ -20,7 +20,7 @@ class PostRepository implements PostRepositoryInterface
         return $posts->toDropdown($key, $value);
     }
 
-    public function markAsPublished(int|array|PostCollection $id, Carbon $published_at = null): null|Post|PostCollection
+    public function markAsPublished(int|array|PostCollection $id, ?Carbon $published_at = null): null|Post|PostCollection
     {
         $published_at = $published_at ?? now();
 

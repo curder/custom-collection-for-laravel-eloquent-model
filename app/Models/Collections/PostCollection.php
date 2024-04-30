@@ -2,8 +2,8 @@
 
 namespace App\Models\Collections;
 
-use App\Models\Post;
 use Carbon\Carbon;
+use App\Models\Post;
 use Illuminate\Support\Collection;
 
 class PostCollection extends Collection
@@ -12,15 +12,14 @@ class PostCollection extends Collection
     {
         return $this->keyBy($key)
             ->map(
-                fn(Post $post) => $post->getAttribute($value)
+                fn (Post $post) => $post->getAttribute($value)
             );
     }
-
 
     public function markAsPublished(Carbon $published_at): self
     {
         $this->each(
-            fn(Post $post) => $post->markAsPublished($published_at)
+            fn (Post $post) => $post->markAsPublished($published_at)
         );
 
         return $this;

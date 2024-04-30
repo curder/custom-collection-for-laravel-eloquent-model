@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\Collections\PostCollection;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\Collections\PostCollection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Post extends Model
 {

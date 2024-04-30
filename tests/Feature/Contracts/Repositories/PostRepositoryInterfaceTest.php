@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Collections\PostCollection;
 use App\Models\Post;
-use App\Models\Repositories\Contracts\PostRepositoryInterface;
+use App\Models\Collections\PostCollection;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use App\Models\Repositories\Contracts\PostRepositoryInterface;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -14,11 +14,10 @@ it('has get dropdown options method', function () {
 
     expect($repository->getDropdownOptions())
         ->toBeInstanceOf(PostCollection::class)
-        ->toMatchArray([$post->id => $post->name,])
+        ->toMatchArray([$post->id => $post->name])
         ->and($repository->getDropdownOptions(value: 'description'))
-        ->toMatchArray([$post->id => $post->description,]);
+        ->toMatchArray([$post->id => $post->description]);
 });
-
 
 it('only can get dropdown options for published posts', function () {
     $repository = app(PostRepositoryInterface::class);
@@ -55,10 +54,9 @@ it('has markAsPublished method', function () {
         ->published_at->not->toBeNull();
 
     $posts = Post::factory(2)->unPublished()->create();
-    expect($repository->markAsPublished(id:$posts->pluck('id')->toArray()))
+    expect($repository->markAsPublished(id: $posts->pluck('id')->toArray()))
         ->toBeInstanceOf(PostCollection::class)
         ->toHaveCount(2);
-
 
     $posts = Post::factory(2)->unPublished()->create();
     expect($repository->markAsPublished($posts))
